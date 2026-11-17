@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spyros Argyrakos Research</title>
+<meta name="description" content="Spyros Argyrakos, security engineer. Research and tools on how AI systems break and how to prove what they did.">
+<meta property="og:title" content="Spyros Argyrakos Research">
+<meta property="og:description" content="Security engineer. Research and tools on how AI systems break and how to prove what they did.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://spyrosarg.github.io/">
+<meta property="og:image" content="https://spyrosarg.github.io/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%2318d27d'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a black hero with the surname set huge and thin, and a particle sphere (an AI system) in front of it,
+     one green piece broken off: the way in. Below, white project cards; the page closes on a black band. */
+  :root {
+    --white: #ffffff;
+    --ink: #0a0a0a;
+    --black: #000000;
+    --grey: #6a6a6a;
+    --line: #e4e4e2;
+    --soft: #f4f4f2;
+    --green: #18d27d;
+    --green-ink: #0a7a45;
+    --sans: 'Geist', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color-scheme: light;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 10px; }
+  svg { display: block; }
+  ::selection { background: var(--green); color: var(--ink); }
+
+  .wrap { max-width: 1320px; margin: 0 auto; padding-inline: clamp(18px, 4vw, 48px); }
+
+  /* Hero */
+  .hero {
+    position: relative; isolation: isolate; overflow: hidden;
+    background: var(--black); color: var(--white);
+    min-height: clamp(640px, 100svh, 980px);
+    display: flex; flex-direction: column;
+  }
+  .hero > .wrap { width: 100%; }
+  #sphere { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+  .nav { position: relative; z-index: 3; }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 80px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 500; font-size: 15.5px; letter-spacing: 0.01em; }
+  .brand i { width: 11px; height: 11px; border-radius: 50%; background: var(--green); cursor: pointer; }
+  .nav-links { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 32px); font-size: 15px; }
+  .nav-links a { color: #a3a3a3; transition: color .15s; }
+  .nav-links a:hover { color: var(--white); }
+  .nav-links a.gh { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); background: var(--white); padding: 9px 16px; border-radius: 999px; font-weight: 500; }
+  .nav-links a.gh:hover { background: var(--green); color: var(--ink); }
+  .nav-links svg { width: 16px; height: 16px; }
+
+  .stage { position: relative; flex: 1; min-height: clamp(320px, 50vw, 600px); }
+  .word {
+    position: relative; z-index: 0;
+    padding-top: clamp(8px, 2vw, 28px);
+    text-align: center;
+    font-weight: 200;
+    font-size: clamp(50px, 12.2vw, 178px);
+    line-height: 0.9;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    color: #e2e2e2;
+    background: linear-gradient(180deg, #ffffff 0%, #bdbdbd 46%, #f2f2f2 62%, #7d7d7d 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sub { position: relative; z-index: 2; margin-top: clamp(10px, 1.4vw, 18px); font-size: clamp(15px, 1.4vw, 19px); font-weight: 400; letter-spacing: 0.04em; color: #cfcfcf; }
+
+  .base { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: clamp(26px, 4vw, 44px); }
+  .base h1 { font-weight: 400; font-size: clamp(22px, 2.3vw, 32px); line-height: 1.15; letter-spacing: -0.02em; max-width: 15ch; text-wrap: balance; }
+  .explore { display: inline-flex; align-items: center; gap: 6px; margin-top: 22px; }
+  .explore span { padding: 9px 18px; border: 1px solid #3d3d3d; border-radius: 999px; font-size: 15px; transition: border-color .2s; }
+  .explore i { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #3d3d3d; display: grid; place-items: center; transition: background .2s, border-color .2s, color .2s; }
+  .explore i svg { width: 15px; height: 15px; }
+  .explore:hover span { border-color: var(--white); }
+  .explore:hover i { background: var(--green); border-color: var(--green); color: var(--ink); }
+  .right { justify-self: end; text-align: right; display: flex; flex-direction: column; gap: 22px; align-items: flex-end; }
+  .right p { color: #a9a9a9; max-width: 34ch; font-size: 16px; }
+  .jumps { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 26px; font-size: 14.5px; }
+  .jumps a { color: #d6d6d6; transition: color .15s; }
+  .jumps a:hover { color: var(--green); }
+
+  /* Text arrives after the particles have mostly assembled */
+  .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+  .d1 { animation-delay: .9s; } .d2 { animation-delay: 1.15s; } .d3 { animation-delay: 1.35s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+  /* Projects */
+  .projects-head { padding-block: clamp(56px, 8vw, 104px) clamp(28px, 3.6vw, 44px); display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 0; }
+  .projects-head h2 { font-weight: 600; font-size: clamp(32px, 4.4vw, 56px); line-height: 1; letter-spacing: -0.045em; }
+  .projects-head p { color: var(--grey); max-width: 52ch; font-size: clamp(16px, 1.5vw, 18.5px); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(36px, 4.4vw, 60px) clamp(20px, 2.6vw, 32px); padding-bottom: clamp(56px, 8vw, 110px); }
+  .card { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 24px; }
+  .card.feature { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+  .card.feature .cover { order: 2; aspect-ratio: 16 / 10; }
+  .kind i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 8px; vertical-align: 1px; }
+  .grid.tools { padding-bottom: 0; }
+  #building { padding-top: 0; }
+  .cover svg { width: 100%; height: 100%; display: block; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } .card.feature { grid-template-columns: 1fr; } .card.feature .cover { order: 0; } }
+  .cover { position: relative; overflow: hidden; border-radius: 22px; aspect-ratio: 16 / 11; }
+  .cover.black { background: var(--ink); }
+  .cover.plain { background: var(--soft); border: 1px solid var(--line); }
+  .cover.green { background: var(--green); }
+  .cover img {
+    position: absolute; left: 9%; top: 12%;
+    width: 100%; height: auto; display: block;
+    border-radius: 10px 0 0 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 18px 40px -12px rgba(0,0,0,.35);
+    transition: transform .6s cubic-bezier(.2,.7,.2,1);
+  }
+  .card:hover .cover img { transform: translate(-3%, -4%); }
+
+  .text { display: flex; flex-direction: column; gap: 8px; padding-inline: 4px; flex: 1; }
+  .kind { font-size: 14.5px; color: var(--grey); }
+  .card h3 { font-weight: 600; font-size: clamp(26px, 2.6vw, 34px); line-height: 1.05; letter-spacing: -0.035em; }
+  .card.feature h3 { font-size: clamp(32px, 3.6vw, 48px); letter-spacing: -0.045em; }
+  .card p { color: var(--grey); font-size: 16.5px; max-width: 44ch; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+  .facts li { list-style: none; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13.5px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .go { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); font-size: 15px; font-weight: 500; }
+  .card.feature .go { margin-top: 18px; }
+  .go span { overflow-wrap: anywhere; }
+  .go i { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); transition: background .2s, border-color .2s, transform .2s; }
+  .go svg { width: 15px; height: 15px; }
+  .card:hover .go i { background: var(--green); border-color: var(--green); transform: rotate(45deg); }
+
+  /* Closing band */
+  .close { background: var(--ink); color: var(--white); }
+  .about { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 6vw, 96px); padding-block: clamp(52px, 7vw, 96px); align-items: end; }
+  .about h2 { font-weight: 600; font-size: clamp(30px, 4.4vw, 56px); line-height: 1; letter-spacing: -0.045em; max-width: 13ch; text-wrap: balance; }
+  .about p { color: #a9a9a9; max-width: 46ch; font-size: 17.5px; }
+  .about dl { margin-top: 24px; }
+  .about dl div { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 16px; padding: 12px 0; border-top: 1px solid #262626; }
+  .about dt { color: #8a8a8a; font-size: 15px; }
+  .about dd { font-weight: 500; font-size: 16px; }
+  footer { border-top: 1px solid #262626; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-block: 24px 36px; font-size: 14.5px; color: #8a8a8a; }
+  footer a:hover { color: var(--green); }
+  footer .flinks { display: flex; gap: 22px; }
+
+  @media (max-width: 760px) {
+    .base { grid-template-columns: 1fr; gap: 26px; }
+    .right { justify-self: start; text-align: left; align-items: flex-start; }
+    .jumps { justify-content: flex-start; }
+    .grid { grid-template-columns: 1fr; }
+    .card.feature { grid-template-columns: 1fr; }
+    .card.feature .cover { order: 0; }
+    .about { grid-template-columns: 1fr; align-items: start; }
+    .about dl div { grid-template-columns: 1fr; gap: 2px; }
+  }
+  @media (max-width: 480px) { .nav-links a[href^="#"] { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ext" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></symbol>
+  <symbol id="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></symbol>
+  <symbol id="gh" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 8 .2Z"/></symbol>
+</svg>
+
+<header class="hero" id="top">
+  <canvas id="sphere" aria-hidden="true"></canvas>
+
+  <div class="nav">
+    <div class="wrap">
+      <a class="brand" href="#top"><i title="Play the intro again"></i>Spyros Argyrakos</a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="#projects">Work</a>
+        <a href="#about">About</a>
+        <a href="https://www.linkedin.com/in/spyros-argyrakos/">LinkedIn</a>
+        <a class="gh" href="https://github.com/SpyrosArg"><svg><use href="#gh"/></svg>GitHub</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="wrap">
+      <div class="word" aria-hidden="true">ARGYRAKOS</div>
+    </div>
+  </div>
+
+  <div class="wrap base">
+    <div class="rise d2">
+      <h1>How AI systems break, and how to prove it.</h1>
+      <a class="explore" href="#projects"><span>See the work</span><i><svg><use href="#arrow"/></svg></i></a>
+    </div>
+    <div class="right rise d3">
+      <p>I'm a security engineer who writes code. AI security is my specialty, and it's what all the work below is about.</p>
+      <nav class="jumps" aria-label="Projects">
+        <a href="#threat-modeling">Threat modeling</a>
+        <a href="#verum">Verum</a>
+        <a href="#myndra-lwm">MYNDRA-LWM</a>
+        <a href="#myndra">MYNDRA</a>
+        <a href="#foinik">Foinik</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="projects-head" id="projects">
+    <h2>Work</h2>
+    <p>Research and tools, newest first.</p>
+  </section>
+
+  <section class="grid" aria-label="Work">
+
+    <a class="card" id="threat-modeling" href="https://spyrosarg.github.io/AI-Threat-Modeling/">
+      <div class="cover plain">
+        <img src="images/threat-modeling.webp" width="1440" height="900" alt="The AI threat modeling cheat sheet page" decoding="async">
+      </div>
+      <div class="text">
+        <span class="kind">Cheat sheet</span>
+        <h3>AI Threat Modeling</h3>
+        <p>A short method for threat modeling anything built on AI, from a scoring model to a team of agents. Four questions: Read, Fail, Limit, Prove.</p>
+        <div class="go"><span>spyrosarg.github.io/AI-Threat-Modeling</span><i><svg><use href="#ext"/></svg></i></div>
+      </div>
+    </a>
+
+    <a class="card" id="verum" href="https://spyrosarg.github.io/Verum/">
+      <div class="cover black">
+        <img src="images/verum.webp" width="1440" height="900" alt="The Verum website home page" decoding="async">
+      </div>
+      <div class="text">
+        <span class="kind">Python library</span>
+        <h3>Verum</h3>
+        <p>Seals the data entering an AI system before it is processed, creating a tamper-evident proof that anyone can verify later.</p>
+        <div class="go"><span>spyrosarg.github.io/Verum</span><i><svg><use href="#ext"/></svg></i></div>
+      </div>
+    </a>
+
+    <a class="card" id="myndra-lwm" href="https://spyrosarg.github.io/myndra-lwm/">
+      <div class="cover plain">
+        <img src="images/myndra-lwm.webp" width="1440" height="900" alt="The MYNDRA-LWM website home page" decoding="async">
+      </div>
+      <div class="text">
+        <span class="kind">Security taxonomy</span>
+        <h3>MYNDRA-LWM</h3>
+        <p>Ten attack categories for AI systems that build and act on internal models of the world, organized by the part of the system each one targets.</p>
+        <div class="go"><span>spyrosarg.github.io/myndra-lwm</span><i><svg><use href="#ext"/></svg></i></div>
+      </div>
+    </a>
+
+    <a class="card" id="myndra" href="https://spyrosarg.github.io/myndra-framework-website/">
+      <div class="cover plain">
+        <img src="images/myndra.webp" width="1440" height="900" alt="The MYNDRA framework website home page" decoding="async">
+      </div>
+      <div class="text">
+        <span class="kind">Testing framework</span>
+        <h3>MYNDRA</h3>
+        <p>A simple, open way to test AI systems, built on the OWASP Top 10 for LLM Applications 2026.</p>
+        <div class="go"><span>spyrosarg.github.io/myndra-framework-website</span><i><svg><use href="#ext"/></svg></i></div>
+      </div>
+    </a>
+
+  </section>
+
+  <section class="projects-head" id="building">
+    <h2>Building now</h2>
+    <p>What I'm working on next.</p>
+  </section>
+
+  <section class="grid" aria-label="Building now">
+
+    <a class="card feature" id="foinik" href="https://foinik.com/">
+      <div class="cover green">
+        <img src="images/foinik.webp" width="1174" height="733" alt="The Foinik website home page" decoding="async">
+      </div>
+      <div class="text">
+        <span class="kind"><i></i>In development</span>
+        <h3>Foinik</h3>
+        <p>An AI red teaming platform. Every AI system has a way in, and Foinik finds it first.</p>
+        <div class="go"><span>foinik.com</span><i><svg><use href="#ext"/></svg></i></div>
+      </div>
+    </a>
+
+  </section>
+</main>
+
+<div class="close">
+  <section class="wrap about" id="about">
+    <h2>I find the weak spot, then build the fix.</h2>
+    <div>
+      <p>I work close to the systems I protect, from the first design to the pipeline that ships them.</p>
+      <dl>
+        <div><dt>Focus</dt><dd>AI security</dd></div>
+        <div><dt>Also</dt><dd>DevSecOps, secure software development, security architecture</dd></div>
+        <div><dt>Based in</dt><dd>Athens, Greece</dd></div>
+      </dl>
+    </div>
+  </section>
+  <footer>
+    <div class="wrap">
+      <span>© <span id="yr">2026</span> Spyros Argyrakos</span>
+      <span class="flinks"><a href="https://www.linkedin.com/in/spyros-argyrakos/">LinkedIn</a><a href="https://github.com/SpyrosArg">GitHub</a></span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  var hero = document.getElementById('top');
+  var stage = document.getElementById('stage');
+  var cv = document.getElementById('sphere');
+  var ctx = cv.getContext('2d');
+  var still = false;
+  try { still = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  var GREEN = [24, 210, 125];
+  var W = 0, H = 0, CX = 0, CY = 0, R = 200;
+
+  // Points on a sphere (Fibonacci lattice). The cap around D is the broken piece.
+  var N = 1800, pts = [];
+  var D = norm([0.62, -0.38, 0.69]);
+  var CAP = 0.42, EDGE = 0.5;
+  function norm(v) { var l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; }
+  for (var i = 0; i < N; i++) {
+    var y = 1 - (i + 0.5) * 2 / N, r = Math.sqrt(1 - y * y), th = i * 2.399963;
+    var p = [Math.cos(th) * r, y, Math.sin(th) * r];
+    var ang = Math.acos(Math.max(-1, Math.min(1, p[0] * D[0] + p[1] * D[1] + p[2] * D[2])));
+    pts.push({
+      p: p,
+      shard: ang < CAP,
+      edge: ang >= CAP && ang < EDGE,
+      ph: Math.random() * 6.283,
+      jit: 0.6 + Math.random() * 0.8,
+      sx: 0, sy: 0, delay: 0, ox: 0, oy: 0
+    });
+  }
+  // Loose dust drifting around, like ash
+  var dust = [];
+  for (var j = 0; j < 70; j++) dust.push({ x: Math.random(), y: Math.random(), v: 0.004 + Math.random() * 0.01, a: 0.08 + Math.random() * 0.22, s: 0.8 + Math.random() * 1.2 });
+
+  function size() {
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    W = hero.clientWidth; H = hero.clientHeight;
+    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    var s = stage.getBoundingClientRect(), h = hero.getBoundingClientRect();
+    CX = W / 2;
+    CY = (s.top - h.top) + s.height * 0.56;
+    R = Math.max(110, Math.min(s.height * 0.4, W * 0.21));
+  }
+
+  var t0 = 0;
+  function scatter() {
+    for (var i = 0; i < N; i++) {
+      var k = pts[i];
+      k.sx = Math.random() * W; k.sy = Math.random() * H;
+      k.delay = Math.random() * 0.7;
+    }
+    t0 = performance.now();
+  }
+
+  var mouse = { x: -9999, y: -9999, tx: 0, ty: 0, sx: 0, sy: 0 };
+  hero.addEventListener('pointermove', function (e) {
+    var h = hero.getBoundingClientRect();
+    mouse.x = e.clientX - h.left; mouse.y = e.clientY - h.top;
+    mouse.tx = (mouse.x / W - 0.5); mouse.ty = (mouse.y / H - 0.5);
+  });
+  hero.addEventListener('pointerleave', function () { mouse.x = -9999; mouse.y = -9999; mouse.tx = 0; mouse.ty = 0; });
+
+  function ease(q) { return 1 - Math.pow(1 - q, 3); }
+
+  var visible = true, running = false;
+  function draw(now) {
+    var t = (now - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+
+    for (var j = 0; j < dust.length; j++) {
+      var u = dust[j];
+      var dy = still ? u.y : (u.y - (now / 1000) * u.v) % 1;
+      if (dy < 0) dy += 1;
+      ctx.fillStyle = 'rgba(255,255,255,' + u.a + ')';
+      ctx.fillRect(u.x * W, dy * H, u.s, u.s);
+    }
+
+    mouse.sx += (mouse.tx - mouse.sx) * 0.05;
+    mouse.sy += (mouse.ty - mouse.sy) * 0.05;
+    var ry = (still ? 0.6 : now / 1000 * 0.16) + mouse.sx * 0.9;
+    var rx = -0.32 + mouse.sy * 0.5;
+    var cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+    var F = R * 4;
+    var push = R * 0.32;
+    var hitR = Math.max(60, R * 0.3);
+
+    for (var i = 0; i < N; i++) {
+      var k = pts[i], x = k.p[0], y = k.p[1], z = k.p[2];
+      if (k.shard) {
+        // the broken piece floats away from the surface and back
+        var off = 1 + (0.24 + 0.07 * Math.sin((still ? 1 : now / 1000) * 0.9 + k.ph * 0.15)) * k.jit;
+        x = x * off + D[0] * 0.08; y = y * off + D[1] * 0.08; z = z * off + D[2] * 0.08;
+      }
+      // rotate around Y, then X
+      var x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+      var y1 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
+      var px = x1 * R, py = y1 * R, pz = z2 * R;
+      var persp = F / (F - pz);
+      var tx = CX + px * persp, ty = CY + py * persp;
+      var depth = (z2 + 1) / 2;
+
+      // pointer scatters nearby particles; they drift back
+      var mdx = tx - mouse.x, mdy = ty - mouse.y, md = Math.hypot(mdx, mdy);
+      var gx = 0, gy = 0;
+      if (md < hitR && md > 0.01) { var f = (1 - md / hitR) * push; gx = mdx / md * f; gy = mdy / md * f; }
+      k.ox += (gx - k.ox) * 0.12; k.oy += (gy - k.oy) * 0.12;
+      tx += k.ox; ty += k.oy;
+
+      // intro: fly in from scattered positions
+      var q = still ? 1 : Math.max(0, Math.min(1, (t - k.delay) / 1.6));
+      var e = ease(q);
+      var X = k.sx + (tx - k.sx) * e, Y = k.sy + (ty - k.sy) * e;
+
+      var a = 0.1 + 0.9 * Math.pow(depth, 1.5);
+      var s = 1 + 1.6 * depth;
+      if (q < 1) { a = 0.18 + (a - 0.18) * e; }
+      if (k.shard) ctx.fillStyle = 'rgba(' + GREEN[0] + ',' + GREEN[1] + ',' + GREEN[2] + ',' + Math.min(1, 0.45 + a * 0.6).toFixed(3) + ')';
+      else if (k.edge) ctx.fillStyle = 'rgba(' + GREEN[0] + ',' + GREEN[1] + ',' + GREEN[2] + ',' + (a * 0.55).toFixed(3) + ')';
+      else ctx.fillStyle = 'rgba(236,236,236,' + a.toFixed(3) + ')';
+      ctx.fillRect(X - s / 2, Y - s / 2, s, s);
+    }
+
+    if (!still && visible) requestAnimationFrame(draw); else running = false;
+  }
+
+  function start() { if (!running) { running = true; requestAnimationFrame(draw); } }
+
+  size();
+  scatter();
+  if (still) { draw(performance.now()); }
+  else {
+    start();
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) start(); }).observe(hero);
+    }
+  }
+  window.addEventListener('resize', function () { size(); if (still) draw(performance.now()); });
+
+  // Click the green dot to watch the sphere assemble again
+  document.querySelector('.brand i').addEventListener('click', function (ev) {
+    ev.preventDefault(); ev.stopPropagation();
+    window.scrollTo(0, 0);
+    if (!still) { scatter(); start(); }
+  });
+})();
+</script>
+</body>
+</html>
